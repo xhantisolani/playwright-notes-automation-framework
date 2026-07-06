@@ -27,7 +27,7 @@
     "api-testing",
     "qa"
   ],
-  "author": "",
+  "author": "Xhanti Solani",
   "license": "MIT",
   "devDependencies": {
     "@eslint/js": "^10.0.1",

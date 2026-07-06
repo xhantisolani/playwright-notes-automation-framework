@@ -110,7 +110,7 @@ npx playwright test --grep "@ui"
 The config captures:
 
 - HTML reports
-- Traces on first retry
+- Traces on failure
 - Screenshots on failure
 - Videos on failure
 
@@ -119,6 +119,10 @@ Open the latest HTML report with:
 ```bash
 npm run report
 ```
+
+The tests use `test.step(...)` so the HTML report shows readable business steps. See
+[docs/reporting-guide.md](docs/reporting-guide.md) for how to read the report and how to turn it
+into a stakeholder summary.
 
 ## Learning Path
 

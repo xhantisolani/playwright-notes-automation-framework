@@ -9,25 +9,35 @@ test.describe('Notes API authentication @api @regression', () => {
     let token: string | undefined;
 
     try {
-      const registration = await notesApi.registerUser(user);
-      expect(registration.response.status(), registration.body.message).toBe(201);
-      expect(registration.body.data.email).toBe(user.email);
+      await test.step('Create a unique practice user through the API', async () => {
+        const registration = await notesApi.registerUser(user);
+        expect(registration.response.status(), registration.body.message).toBe(201);
+        expect(registration.body.data.email).toBe(user.email);
+      });
 
-      const login = await notesApi.login(user.email, user.password);
-      expect(login.response.status(), login.body.message).toBe(200);
-      expect(login.body.data.token).toBeTruthy();
-      token = login.body.data.token;
+      await test.step('Log in with the new user through the API', async () => {
+        const login = await notesApi.login(user.email, user.password);
+        expect(login.response.status(), login.body.message).toBe(200);
+        expect(login.body.data.token).toBeTruthy();
+        token = login.body.data.token;
+      });
     } finally {
-      if (token) {
-        await cleanupAccount(notesApi, token);
-      }
+      await test.step('Clean up the temporary user account', async () => {
+        if (token) {
+          await cleanupAccount(notesApi, token);
+        }
+      });
     }
   });
 
   test('rejects invalid login credentials', async ({ notesApi }) => {
-    const login = await notesApi.login(invalidUser.email, invalidUser.password);
+    const login = await test.step('Try to log in with invalid credentials', async () => {
+      return notesApi.login(invalidUser.email, invalidUser.password);
+    });
 
-    expect([400, 401]).toContain(login.response.status());
-    expect(login.body.success).toBe(false);
+    await test.step('Verify the API rejects the invalid login', async () => {
+      expect([400, 401]).toContain(login.response.status());
+      expect(login.body.success).toBe(false);
+    });
   });
 });

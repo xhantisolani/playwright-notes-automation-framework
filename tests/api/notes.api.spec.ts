@@ -11,44 +11,61 @@ test.describe('Notes API CRUD @api @regression', () => {
 
     try {
       const note = createNote({ category: 'Work' });
-      const created = await notesApi.createNote(registeredUser.token, note);
-      expect(created.response.status(), created.body.message).toBe(200);
-      expect(created.body.data.title).toBe(note.title);
-      noteIds.push(created.body.data.id);
+      const created = await test.step('Create a Work note through the API', async () => {
+        const response = await notesApi.createNote(registeredUser.token, note);
+        expect(response.response.status(), response.body.message).toBe(200);
+        expect(response.body.data.title).toBe(note.title);
+        noteIds.push(response.body.data.id);
+        return response;
+      });
 
-      const fetched = await notesApi.getNote(registeredUser.token, created.body.data.id);
-      expect(fetched.response.status(), fetched.body.message).toBe(200);
-      expect(fetched.body.data.description).toBe(note.description);
+      await test.step('Read the created note through the API', async () => {
+        const fetched = await notesApi.getNote(registeredUser.token, created.body.data.id);
+        expect(fetched.response.status(), fetched.body.message).toBe(200);
+        expect(fetched.body.data.description).toBe(note.description);
+      });
 
       const updatePayload = createNote({ title: `${note.title} updated`, category: 'Personal' });
-      const updated = await notesApi.updateNote(registeredUser.token, created.body.data.id, {
-        ...updatePayload,
-        completed: false,
+      await test.step('Update the note title and category through the API', async () => {
+        const updated = await notesApi.updateNote(registeredUser.token, created.body.data.id, {
+          ...updatePayload,
+          completed: false,
+        });
+        expect(updated.response.status(), updated.body.message).toBe(200);
+        expect(updated.body.data.title).toBe(updatePayload.title);
+        expect(updated.body.data.category).toBe('Personal');
       });
-      expect(updated.response.status(), updated.body.message).toBe(200);
-      expect(updated.body.data.title).toBe(updatePayload.title);
-      expect(updated.body.data.category).toBe('Personal');
 
-      const completed = await notesApi.updateNoteCompleted(
-        registeredUser.token,
-        created.body.data.id,
-        true,
-      );
-      expect(completed.response.status(), completed.body.message).toBe(200);
-      expect(completed.body.data.completed).toBe(true);
+      await test.step('Mark the note as completed through the API', async () => {
+        const completed = await notesApi.updateNoteCompleted(
+          registeredUser.token,
+          created.body.data.id,
+          true,
+        );
+        expect(completed.response.status(), completed.body.message).toBe(200);
+        expect(completed.body.data.completed).toBe(true);
+      });
 
-      const deleted = await notesApi.deleteNote(registeredUser.token, created.body.data.id);
-      expect(deleted.response.status(), deleted.body.message).toBe(200);
-      noteIds.pop();
+      await test.step('Delete the note through the API', async () => {
+        const deleted = await notesApi.deleteNote(registeredUser.token, created.body.data.id);
+        expect(deleted.response.status(), deleted.body.message).toBe(200);
+        noteIds.pop();
+      });
     } finally {
-      await cleanupNotes(notesApi, registeredUser.token, noteIds);
+      await test.step('Clean up any note left by the API test', async () => {
+        await cleanupNotes(notesApi, registeredUser.token, noteIds);
+      });
     }
   });
 
   test('rejects requests without a valid token', async ({ notesApi }) => {
-    const response = await notesApi.getNotes('invalid-token');
+    const response = await test.step('Call the Notes API with an invalid token', async () => {
+      return notesApi.getNotes('invalid-token');
+    });
 
-    expect(response.response.status()).toBe(401);
-    expect(response.body.success).toBe(false);
+    await test.step('Verify the API returns an unauthorized response', async () => {
+      expect(response.response.status()).toBe(401);
+      expect(response.body.success).toBe(false);
+    });
   });
 });

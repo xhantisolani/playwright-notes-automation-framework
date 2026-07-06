@@ -6,14 +6,20 @@ test.describe('Notes UI and API integration @e2e @regression', () => {
     page,
     createNoteViaApi,
   }) => {
-    const apiNote = await createNoteViaApi({
-      title: 'API-created note visible in UI',
-      category: 'Personal',
+    const apiNote = await test.step('Create a Personal note through the API', async () => {
+      return createNoteViaApi({
+        title: 'API-created note visible in UI',
+        category: 'Personal',
+      });
     });
     const notesPage = new NotesPage(page);
 
-    await notesPage.goto();
+    await test.step('Open the authenticated Notes page', async () => {
+      await notesPage.goto();
+    });
 
-    await expect(notesPage.noteCardByTitle(apiNote.title)).toBeVisible();
+    await test.step('Verify the API-created note is visible in the UI', async () => {
+      await expect(notesPage.noteCardByTitle(apiNote.title)).toBeVisible();
+    });
   });
 });

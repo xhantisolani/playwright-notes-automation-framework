@@ -17,7 +17,7 @@ export default defineConfig({
   globalTeardown: './tests/setup/global.teardown.ts',
   use: {
     baseURL: env.uiBaseUrl,
-    trace: 'on-first-retry',
+    trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
   },

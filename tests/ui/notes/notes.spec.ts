@@ -12,13 +12,29 @@ test.describe('Notes App note management @ui @regression', () => {
       category: 'Personal',
     });
 
-    await notesPage.goto();
-    await notesPage.expectLoaded();
-    await notesPage.addNote(note);
-    await notesPage.editNoteByTitle(note.title, editedNote);
-    await notesPage.markNoteCompletedByTitle(editedNote.title);
-    await notesPage.deleteNoteByTitle(editedNote.title);
+    await test.step('Open the authenticated Notes page', async () => {
+      await notesPage.goto();
+      await notesPage.expectLoaded();
+    });
 
-    await expect(notesPage.noteCardByTitle(editedNote.title)).toBeHidden();
+    await test.step('Create a Home note through the UI', async () => {
+      await notesPage.addNote(note);
+    });
+
+    await test.step('Edit the note title, description, and category', async () => {
+      await notesPage.editNoteByTitle(note.title, editedNote);
+    });
+
+    await test.step('Mark the edited note as completed', async () => {
+      await notesPage.markNoteCompletedByTitle(editedNote.title);
+    });
+
+    await test.step('Delete the edited note', async () => {
+      await notesPage.deleteNoteByTitle(editedNote.title);
+    });
+
+    await test.step('Verify the deleted note is no longer visible', async () => {
+      await expect(notesPage.noteCardByTitle(editedNote.title)).toBeHidden();
+    });
   });
 });

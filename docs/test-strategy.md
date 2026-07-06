@@ -40,3 +40,6 @@ the behaviour more clearly. Avoid brittle CSS selectors tied to styling.
 
 Use Playwright HTML reports first. For retry failures, open the trace. Screenshots and videos are
 retained only for failures to keep local and CI output manageable.
+
+Tests use `test.step(...)` so the report shows business-readable steps before the lower-level
+technical evidence.

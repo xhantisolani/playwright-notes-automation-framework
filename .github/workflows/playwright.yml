@@ -43,7 +43,7 @@ jobs:
         run: npm run typecheck
 
   test:
-    name: ${{ matrix.project }} shard ${{ matrix.shard }}
+    name: ${{ matrix.project }} ${{ matrix.shard_label }}
     needs: quality
     runs-on: ubuntu-latest
     timeout-minutes: 35
@@ -53,8 +53,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project: [api, chromium]
-        shard: ['1/2', '2/2']
+        include:
+          - project: api
+            shard: '1/2'
+            shard_label: shard-1-of-2
+          - project: api
+            shard: '2/2'
+            shard_label: shard-2-of-2
+          - project: chromium
+            shard: '1/2'
+            shard_label: shard-1-of-2
+          - project: chromium
+            shard: '2/2'
+            shard_label: shard-2-of-2
 
     steps:
       - name: Checkout
@@ -84,7 +95,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report-${{ matrix.project }}-${{ matrix.shard }}
+          name: playwright-report-${{ matrix.project }}-${{ matrix.shard_label }}
           path: playwright-report/
           retention-days: 14
 
@@ -92,7 +103,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-${{ matrix.project }}-${{ matrix.shard }}
+          name: test-results-${{ matrix.project }}-${{ matrix.shard_label }}
           path: test-results/
           retention-days: 14
 
@@ -100,6 +111,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allure-results-${{ matrix.project }}-${{ matrix.shard }}
+          name: allure-results-${{ matrix.project }}-${{ matrix.shard_label }}
           path: allure-results/
           retention-days: 14

@@ -43,3 +43,10 @@ retained only for failures to keep local and CI output manageable.
 
 Tests use `test.step(...)` so the report shows business-readable steps before the lower-level
 technical evidence.
+
+## Specialized Suites
+
+- Mocking tests demonstrate `page.route()` for stable UI behavior without real API dependency.
+- Accessibility tests use axe against the Notes app root.
+- Visual regression is opt-in through `RUN_VISUAL=true` and the `test:visual` scripts.
+- CI runs API and Chromium suites through a matrix and two shards.

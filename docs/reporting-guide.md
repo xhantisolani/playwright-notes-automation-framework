@@ -15,9 +15,13 @@ Run:
 ```bash
 npm test
 npm run report
+npm run report:summary
+npm run report:allure
 ```
 
 The report opens from `playwright-report/`.
+The summary command reads `test-results/results.json` and prints a short terminal summary.
+The Allure command generates `allure-report/` from `allure-results/`.
 
 ## How To Read A Test
 
@@ -39,6 +43,7 @@ The framework captures evidence only when it is useful:
 - Video retained on failure
 - Trace retained on failure
 - HTML report for all runs
+- Allure results for richer test history and categorization
 
 This avoids creating thousands of screenshots for passing tests while still giving enough detail
 when something breaks.

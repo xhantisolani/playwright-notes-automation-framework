@@ -19,6 +19,12 @@ export interface UserProfile {
   company?: string;
 }
 
+export interface UserProfileUpdate {
+  name: string;
+  phone?: string;
+  company?: string;
+}
+
 export interface LoginData extends UserProfile {
   token: string;
 }

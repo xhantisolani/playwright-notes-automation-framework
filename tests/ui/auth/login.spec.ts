@@ -1,5 +1,3 @@
-import { LoginPage } from '../../../pages/LoginPage';
-import { NotesPage } from '../../../pages/NotesPage';
 import { expectedMessages } from '../../../test-data/expected-messages.data';
 import { invalidUser } from '../../../test-data/users.data';
 import { expect, test } from '../../../fixtures/ui.fixture';
@@ -7,9 +5,7 @@ import { expect, test } from '../../../fixtures/ui.fixture';
 test.describe('Notes App login @ui @regression', () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  test('shows the login page controls @smoke', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-
+  test('shows the login page controls @smoke', async ({ loginPage }) => {
     await test.step('Open the Notes App login page', async () => {
       await loginPage.goto();
     });
@@ -19,9 +15,7 @@ test.describe('Notes App login @ui @regression', () => {
     });
   });
 
-  test('shows an error for invalid credentials', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-
+  test('shows an error for invalid credentials', async ({ loginPage }) => {
     await test.step('Open the Notes App login page', async () => {
       await loginPage.goto();
     });
@@ -35,10 +29,11 @@ test.describe('Notes App login @ui @regression', () => {
     });
   });
 
-  test('allows a registered user to log in @smoke', async ({ page, registeredUser }) => {
-    const loginPage = new LoginPage(page);
-    const notesPage = new NotesPage(page);
-
+  test('allows a registered user to log in @smoke', async ({
+    loginPage,
+    notesPage,
+    registeredUser,
+  }) => {
     await test.step('Open the Notes App login page', async () => {
       await loginPage.goto();
     });

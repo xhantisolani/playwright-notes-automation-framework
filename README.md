@@ -64,7 +64,13 @@ npm run test:ui
 npm run test:e2e
 npm run test:smoke
 npm run test:regression
+npm run test:mocking
+npm run test:accessibility
+npm run test:visual:update
+npm run test:visual
 npm run report
+npm run report:summary
+npm run report:allure
 ```
 
 Quality checks:
@@ -123,6 +129,21 @@ npm run report
 The tests use `test.step(...)` so the HTML report shows readable business steps. See
 [docs/reporting-guide.md](docs/reporting-guide.md) for how to read the report and how to turn it
 into a stakeholder summary.
+
+## Advanced Patterns Included
+
+- Data-driven category tests
+- UI registration with API cleanup
+- Profile UI tests verified through the API
+- UI actions verified through backend state
+- Reusable API assertion helpers
+- JSON report summary for human-readable run output
+- Allure result generation
+- Environment profiles with `TEST_ENV`
+- Accessibility scans with axe
+- API mocking with `page.route()`
+- Opt-in visual regression
+- CI matrix and sharding
 
 ## Learning Path
 

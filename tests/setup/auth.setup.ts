@@ -2,6 +2,7 @@ import { expect, request, test as setup } from '@playwright/test';
 import { createUser } from '../../factories/userFactory';
 import { NotesApiClient } from '../../utils/apiClient';
 import { env, paths, writeAuthSession } from '../../utils/env';
+import { blockThirdPartyNoise } from '../../utils/network';
 import type { AuthSession, TestUser } from '../../types/notes';
 
 setup('authenticate once and save storage state @setup', async ({ page }) => {
@@ -39,7 +40,8 @@ setup('authenticate once and save storage state @setup', async ({ page }) => {
   };
 
   await setup.step('Save authenticated browser storage state for UI tests', async () => {
-    await page.goto(env.uiBaseUrl);
+    await blockThirdPartyNoise(page);
+    await page.goto(env.uiBaseUrl, { waitUntil: 'domcontentloaded' });
     await page.evaluate((token) => window.localStorage.setItem('token', token), session.token);
     await page.context().storageState({ path: paths.authFile });
     writeAuthSession(session);

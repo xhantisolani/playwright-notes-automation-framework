@@ -61,3 +61,20 @@
 - Add Restful Booker API practice
 - Add cross-browser CI matrix
 - Add Codex-assisted PR review workflow
+
+## Phase 10: Advanced Practice Added
+
+- Reusable API assertion helpers
+- Profile API tests
+- UI profile tests
+- UI registration with API cleanup
+- Data-driven category tests
+- E2E tests that verify UI actions through API state
+- JSON report summaries for stakeholder-style output
+- Allure reporting
+- Environment profiles
+- CI matrix and sharding
+- Accessibility checks
+- API mocking with route interception
+- Opt-in visual regression
+- Flaky test strategy

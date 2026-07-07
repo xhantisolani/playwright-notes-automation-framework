@@ -6,12 +6,55 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      test_env:
+        description: Environment profile from utils/envProfiles.ts
+        default: qa
+        required: true
+        type: choice
+        options:
+          - local
+          - qa
+          - staging
 
 jobs:
-  test:
-    name: Lint, Typecheck, And Test
+  quality:
+    name: Lint And Typecheck
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+  test:
+    name: ${{ matrix.project }} shard ${{ matrix.shard }}
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      TEST_ENV: ${{ github.event.inputs.test_env || 'qa' }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [api, chromium]
+        shard: ['1/2', '2/2']
 
     steps:
       - name: Checkout
@@ -27,21 +70,36 @@ jobs:
         run: npm ci
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+        if: matrix.project == 'chromium'
+        run: npx playwright install --with-deps chromium
 
-      - name: Lint
-        run: npm run lint
+      - name: Run Playwright shard
+        run: npx playwright test --project=${{ matrix.project }} --shard=${{ matrix.shard }}
 
-      - name: Typecheck
-        run: npm run typecheck
-
-      - name: Run Playwright tests
-        run: npm test
+      - name: Write GitHub summary
+        if: always()
+        run: npm run report:summary >> "$GITHUB_STEP_SUMMARY" || true
 
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.project }}-${{ matrix.shard }}
           path: playwright-report/
+          retention-days: 14
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.project }}-${{ matrix.shard }}
+          path: test-results/
+          retention-days: 14
+
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-${{ matrix.project }}-${{ matrix.shard }}
+          path: allure-results/
           retention-days: 14

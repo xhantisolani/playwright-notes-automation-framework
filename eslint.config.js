@@ -6,6 +6,8 @@ module.exports = tseslint.config(
     ignores: [
       'node_modules/',
       'playwright-report/',
+      'allure-results/',
+      'allure-report/',
       'test-results/',
       'playwright/.auth/',
       'eslint.config.js',
@@ -13,6 +15,15 @@ module.exports = tseslint.config(
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
+  {
+    files: ['scripts/*.mjs'],
+    languageOptions: {
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+      },
+    },
+  },
   {
     files: ['**/*.ts'],
     rules: {

@@ -1,36 +1,42 @@
 import { expect, test as base } from './notes.fixture';
-
-const blockedThirdPartyHosts = [
-  'doubleclick.net',
-  'google-analytics.com',
-  'googleadservices.com',
-  'googlesyndication.com',
-  'googletagmanager.com',
-  'pagead2.googlesyndication.com',
-];
+import { LoginPage } from '../pages/LoginPage';
+import { NotesPage } from '../pages/NotesPage';
+import { ProfilePage } from '../pages/ProfilePage';
+import { RegisterPage } from '../pages/RegisterPage';
+import { blockThirdPartyNoise } from '../utils/network';
 
 interface UiFixtures {
   blockThirdPartyNoise: void;
+  loginPage: LoginPage;
+  notesPage: NotesPage;
+  profilePage: ProfilePage;
+  registerPage: RegisterPage;
 }
 
 export const test = base.extend<UiFixtures>({
   blockThirdPartyNoise: [
     async ({ page }, use) => {
-      await page.route('**/*', async (route) => {
-        const requestUrl = route.request().url();
-
-        if (blockedThirdPartyHosts.some((host) => requestUrl.includes(host))) {
-          await route.abort();
-          return;
-        }
-
-        await route.continue();
-      });
-
+      await blockThirdPartyNoise(page);
       await use();
     },
     { auto: true },
   ],
+
+  loginPage: async ({ page }, use) => {
+    await use(new LoginPage(page));
+  },
+
+  notesPage: async ({ page }, use) => {
+    await use(new NotesPage(page));
+  },
+
+  profilePage: async ({ page }, use) => {
+    await use(new ProfilePage(page));
+  },
+
+  registerPage: async ({ page }, use) => {
+    await use(new RegisterPage(page));
+  },
 });
 
 export { expect };

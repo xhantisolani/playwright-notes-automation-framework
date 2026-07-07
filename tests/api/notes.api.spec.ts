@@ -1,5 +1,11 @@
 import { createNote } from '../../factories/noteFactory';
 import { expect, test } from '../../fixtures/api.fixture';
+import { noteCategories } from '../../test-data/notes.data';
+import {
+  expectFailureMessage,
+  expectNoteMatches,
+  expectSuccessfulEnvelope,
+} from '../../utils/apiAssertions';
 import { cleanupNotes } from '../../utils/cleanup';
 
 test.describe('Notes API CRUD @api @regression', () => {
@@ -13,16 +19,16 @@ test.describe('Notes API CRUD @api @regression', () => {
       const note = createNote({ category: 'Work' });
       const created = await test.step('Create a Work note through the API', async () => {
         const response = await notesApi.createNote(registeredUser.token, note);
-        expect(response.response.status(), response.body.message).toBe(200);
-        expect(response.body.data.title).toBe(note.title);
+        expectSuccessfulEnvelope(expect, response);
+        expectNoteMatches(expect, response.body.data, note);
         noteIds.push(response.body.data.id);
         return response;
       });
 
       await test.step('Read the created note through the API', async () => {
         const fetched = await notesApi.getNote(registeredUser.token, created.body.data.id);
-        expect(fetched.response.status(), fetched.body.message).toBe(200);
-        expect(fetched.body.data.description).toBe(note.description);
+        expectSuccessfulEnvelope(expect, fetched);
+        expectNoteMatches(expect, fetched.body.data, note);
       });
 
       const updatePayload = createNote({ title: `${note.title} updated`, category: 'Personal' });
@@ -31,9 +37,8 @@ test.describe('Notes API CRUD @api @regression', () => {
           ...updatePayload,
           completed: false,
         });
-        expect(updated.response.status(), updated.body.message).toBe(200);
-        expect(updated.body.data.title).toBe(updatePayload.title);
-        expect(updated.body.data.category).toBe('Personal');
+        expectSuccessfulEnvelope(expect, updated);
+        expectNoteMatches(expect, updated.body.data, updatePayload);
       });
 
       await test.step('Mark the note as completed through the API', async () => {
@@ -42,7 +47,7 @@ test.describe('Notes API CRUD @api @regression', () => {
           created.body.data.id,
           true,
         );
-        expect(completed.response.status(), completed.body.message).toBe(200);
+        expectSuccessfulEnvelope(expect, completed);
         expect(completed.body.data.completed).toBe(true);
       });
 
@@ -58,14 +63,57 @@ test.describe('Notes API CRUD @api @regression', () => {
     }
   });
 
+  test('creates notes for every supported category @smoke', async ({
+    notesApi,
+    registeredUser,
+  }) => {
+    const noteIds: string[] = [];
+
+    try {
+      for (const category of noteCategories) {
+        await test.step(`Create and verify a ${category} note`, async () => {
+          const note = createNote({ category });
+          const created = await notesApi.createNote(registeredUser.token, note);
+          expectSuccessfulEnvelope(expect, created);
+          expectNoteMatches(expect, created.body.data, note);
+          noteIds.push(created.body.data.id);
+        });
+      }
+
+      await test.step('Verify all category notes appear in the user note list', async () => {
+        const notes = await notesApi.getNotes(registeredUser.token);
+        expectSuccessfulEnvelope(expect, notes);
+
+        for (const noteId of noteIds) {
+          expect(notes.body.data.map((note) => note.id)).toContain(noteId);
+        }
+      });
+    } finally {
+      await test.step('Clean up category notes', async () => {
+        await cleanupNotes(notesApi, registeredUser.token, noteIds);
+      });
+    }
+  });
+
+  test('rejects an invalid note payload', async ({ notesApi, registeredUser }) => {
+    const invalidNote = createNote({ title: '' });
+
+    const response = await test.step('Try to create a note without a title', async () => {
+      return notesApi.createNote(registeredUser.token, invalidNote);
+    });
+
+    await test.step('Verify the API returns a bad request response', async () => {
+      expectFailureMessage(expect, response, 400);
+    });
+  });
+
   test('rejects requests without a valid token', async ({ notesApi }) => {
     const response = await test.step('Call the Notes API with an invalid token', async () => {
       return notesApi.getNotes('invalid-token');
     });
 
     await test.step('Verify the API returns an unauthorized response', async () => {
-      expect(response.response.status()).toBe(401);
-      expect(response.body.success).toBe(false);
+      expectFailureMessage(expect, response, 401);
     });
   });
 });

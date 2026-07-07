@@ -2,6 +2,7 @@ import 'dotenv/config';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { AuthSession } from '../types/notes';
+import { resolveEnvironmentProfile } from './envProfiles';
 
 function trimTrailingSlash(value: string): string {
   return value.replace(/\/+$/, '');
@@ -17,6 +18,7 @@ function readBoolean(value: string | undefined, fallback = false): boolean {
 
 const testUserEmail = process.env.TEST_USER_EMAIL?.trim() || undefined;
 const testUserPassword = process.env.TEST_USER_PASSWORD?.trim() || undefined;
+const environmentProfile = resolveEnvironmentProfile(process.env.TEST_ENV);
 
 if ((testUserEmail && !testUserPassword) || (!testUserEmail && testUserPassword)) {
   throw new Error('Set both TEST_USER_EMAIL and TEST_USER_PASSWORD, or leave both empty.');
@@ -29,16 +31,14 @@ export const paths = {
 };
 
 export const env = {
-  uiBaseUrl: trimTrailingSlash(
-    process.env.BASE_URL ?? 'https://practice.expandtesting.com/notes/app',
-  ),
-  apiBaseUrl: trimTrailingSlash(
-    process.env.API_BASE_URL ?? 'https://practice.expandtesting.com/notes/api',
-  ),
+  testEnv: environmentProfile.name,
+  uiBaseUrl: trimTrailingSlash(process.env.BASE_URL ?? environmentProfile.uiBaseUrl),
+  apiBaseUrl: trimTrailingSlash(process.env.API_BASE_URL ?? environmentProfile.apiBaseUrl),
   testUserName: process.env.TEST_USER_NAME?.trim() || 'Playwright Learner',
   testUserEmail,
   testUserPassword,
   keepTestAccount: readBoolean(process.env.KEEP_TEST_ACCOUNT),
+  runVisual: readBoolean(process.env.RUN_VISUAL),
   ci: readBoolean(process.env.CI),
 };
 

@@ -36,11 +36,31 @@ export class NotesPage extends BasePage {
     await expect(this.addNewNoteButton).toBeVisible();
   }
 
-  async addNote(note: NotePayload): Promise<void> {
+  async openNewNoteForm(): Promise<void> {
     await this.addNewNoteButton.click();
+    await expect(this.titleInput).toBeVisible();
+  }
+
+  async addNote(note: NotePayload): Promise<void> {
+    await this.openNewNoteForm();
     await this.fillNoteForm(note);
     await this.submitButton.click();
     await expect(this.noteCardByTitle(note.title)).toBeVisible();
+  }
+
+  async submitEmptyNoteForm(): Promise<void> {
+    await this.openNewNoteForm();
+    await this.submitButton.click();
+  }
+
+  async cancelNoteForm(): Promise<void> {
+    await this.cancelButton.click();
+    await expect(this.titleInput).toBeHidden();
+  }
+
+  async expectRequiredNoteValidation(): Promise<void> {
+    await expect(this.titleInput).toHaveClass(/is-invalid/);
+    await expect(this.descriptionInput).toHaveClass(/is-invalid/);
   }
 
   async editNoteByTitle(currentTitle: string, nextNote: NotePayload): Promise<void> {
@@ -71,14 +91,33 @@ export class NotesPage extends BasePage {
     await this.searchButton.click();
   }
 
+  async clearSearch(): Promise<void> {
+    await this.searchInput.fill('');
+    await this.searchButton.click();
+  }
+
   async filterByCategory(category: NoteCategory): Promise<void> {
     await this.byTestId(`category-${category.toLowerCase()}`).click();
+  }
+
+  async viewNoteByTitle(title: string): Promise<void> {
+    const card = this.noteCardByTitle(title);
+    await expect(card).toBeVisible();
+    await card.getByTestId('note-view').click();
   }
 
   noteCardByTitle(title: string): Locator {
     return this.byTestId('note-card').filter({
       has: this.page.getByTestId('note-card-title').filter({ hasText: title }),
     });
+  }
+
+  noteDescriptionByTitle(title: string): Locator {
+    return this.noteCardByTitle(title).getByTestId('note-card-description');
+  }
+
+  noteCompletedSwitchByTitle(title: string): Locator {
+    return this.noteCardByTitle(title).getByTestId('toggle-note-switch');
   }
 
   private async fillNoteForm(note: NotePayload): Promise<void> {

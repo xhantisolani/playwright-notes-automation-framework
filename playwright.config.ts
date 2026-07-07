@@ -3,17 +3,28 @@ import { env, paths } from './utils/env';
 
 export default defineConfig({
   testDir: './tests',
-  timeout: 30_000,
+  testIgnore: env.runVisual ? [] : ['**/ui/visual/**'],
+  timeout: 45_000,
   expect: {
     timeout: 10_000,
   },
   fullyParallel: false,
   forbidOnly: env.ci,
   retries: env.ci ? 2 : 0,
-  workers: env.ci ? 1 : undefined,
+  workers: env.ci ? 1 : 4,
   reporter: env.ci
-    ? [['github'], ['html', { outputFolder: 'playwright-report', open: 'never' }]]
-    : [['list'], ['html', { outputFolder: 'playwright-report', open: 'never' }]],
+    ? [
+        ['github'],
+        ['html', { outputFolder: 'playwright-report', open: 'never' }],
+        ['json', { outputFile: 'test-results/results.json' }],
+        ['allure-playwright', { outputFolder: 'allure-results', detail: true }],
+      ]
+    : [
+        ['list'],
+        ['html', { outputFolder: 'playwright-report', open: 'never' }],
+        ['json', { outputFile: 'test-results/results.json' }],
+        ['allure-playwright', { outputFolder: 'allure-results', detail: true }],
+      ],
   globalTeardown: './tests/setup/global.teardown.ts',
   use: {
     baseURL: env.uiBaseUrl,

@@ -8,6 +8,7 @@ import type {
   NoteUpdatePayload,
   TestUser,
   UserProfile,
+  UserProfileUpdate,
 } from '../types/notes';
 
 export interface ApiResult<TBody> {
@@ -49,6 +50,22 @@ export class NotesApiClient {
     return this.parse(
       await this.request.get(this.url('/users/profile'), {
         headers: this.authHeaders(token),
+      }),
+    );
+  }
+
+  async updateProfile(
+    token: string,
+    profile: UserProfileUpdate,
+  ): Promise<ApiResult<ApiEnvelope<UserProfile>>> {
+    return this.parse(
+      await this.request.patch(this.url('/users/profile'), {
+        headers: this.authHeaders(token),
+        form: {
+          name: profile.name,
+          phone: profile.phone ?? '',
+          company: profile.company ?? '',
+        },
       }),
     );
   }

@@ -32,6 +32,7 @@ Each test now uses business-readable steps such as:
 - Verify the login error message is shown
 - Create a Work note through the API
 - Verify the API-created note is visible in the UI
+- Verify the final journey state through the API
 
 Open a test in the report and expand the step list. The step names explain the test story.
 

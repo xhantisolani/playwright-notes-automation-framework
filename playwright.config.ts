@@ -1,9 +1,14 @@
 import { defineConfig, devices } from '@playwright/test';
 import { env, paths } from './utils/env';
 
+const ignoredTests = [
+  ...(!env.runVisual ? ['**/ui/visual/**'] : []),
+  ...(!env.runJourney ? ['**/journeys/**'] : []),
+];
+
 export default defineConfig({
   testDir: './tests',
-  testIgnore: env.runVisual ? [] : ['**/ui/visual/**'],
+  testIgnore: ignoredTests,
   timeout: 45_000,
   expect: {
     timeout: 10_000,
@@ -46,7 +51,7 @@ export default defineConfig({
     },
     {
       name: 'chromium',
-      testMatch: ['**/ui/**/*.spec.ts', '**/e2e/**/*.spec.ts'],
+      testMatch: ['**/ui/**/*.spec.ts', '**/e2e/**/*.spec.ts', '**/journeys/**/*.spec.ts'],
       dependencies: ['setup'],
       use: {
         ...devices['Desktop Chrome'],

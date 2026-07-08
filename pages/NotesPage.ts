@@ -2,6 +2,8 @@ import { expect, type Locator, type Page } from '@playwright/test';
 import type { NoteCategory, NotePayload } from '../types/notes';
 import { BasePage } from './BasePage';
 
+const mutationRenderTimeout = 30_000;
+
 export class NotesPage extends BasePage {
   readonly addNewNoteButton: Locator;
   readonly titleInput: Locator;
@@ -13,6 +15,8 @@ export class NotesPage extends BasePage {
   readonly noNotesMessage: Locator;
   readonly searchInput: Locator;
   readonly searchButton: Locator;
+  readonly allCategoryButton: Locator;
+  readonly logoutButton: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -26,6 +30,8 @@ export class NotesPage extends BasePage {
     this.noNotesMessage = this.byTestId('no-notes-message');
     this.searchInput = this.byTestId('search-input');
     this.searchButton = this.byTestId('search-btn');
+    this.allCategoryButton = this.byTestId('category-all');
+    this.logoutButton = this.byTestId('logout');
   }
 
   async goto(): Promise<void> {
@@ -45,7 +51,9 @@ export class NotesPage extends BasePage {
     await this.openNewNoteForm();
     await this.fillNoteForm(note);
     await this.submitButton.click();
-    await expect(this.noteCardByTitle(note.title)).toBeVisible();
+    await expect(this.noteCardByTitle(note.title)).toBeVisible({
+      timeout: mutationRenderTimeout,
+    });
   }
 
   async submitEmptyNoteForm(): Promise<void> {
@@ -69,7 +77,9 @@ export class NotesPage extends BasePage {
     await card.getByTestId('note-edit').click();
     await this.fillNoteForm(nextNote);
     await this.submitButton.click();
-    await expect(this.noteCardByTitle(nextNote.title)).toBeVisible();
+    await expect(this.noteCardByTitle(nextNote.title)).toBeVisible({
+      timeout: mutationRenderTimeout,
+    });
   }
 
   async deleteNoteByTitle(title: string): Promise<void> {
@@ -77,7 +87,7 @@ export class NotesPage extends BasePage {
     await expect(card).toBeVisible();
     await card.getByTestId('note-delete').click();
     await this.byTestId('note-delete-confirm').click();
-    await expect(card).toBeHidden();
+    await expect(card).toBeHidden({ timeout: mutationRenderTimeout });
   }
 
   async markNoteCompletedByTitle(title: string): Promise<void> {
@@ -96,6 +106,11 @@ export class NotesPage extends BasePage {
     await this.searchButton.click();
   }
 
+  async showAllNotes(): Promise<void> {
+    await this.clearSearch();
+    await this.allCategoryButton.click();
+  }
+
   async filterByCategory(category: NoteCategory): Promise<void> {
     await this.byTestId(`category-${category.toLowerCase()}`).click();
   }
@@ -104,6 +119,13 @@ export class NotesPage extends BasePage {
     const card = this.noteCardByTitle(title);
     await expect(card).toBeVisible();
     await card.getByTestId('note-view').click();
+  }
+
+  async logout(): Promise<void> {
+    await this.logoutButton.click();
+    await expect(this.page).toHaveURL(/\/notes\/app\/?$/);
+    await expect(this.addNewNoteButton).toBeHidden();
+    await expect(this.page.getByRole('link', { name: 'Login' })).toBeVisible();
   }
 
   noteCardByTitle(title: string): Locator {

@@ -39,6 +39,7 @@ export const env = {
   testUserPassword,
   keepTestAccount: readBoolean(process.env.KEEP_TEST_ACCOUNT),
   runVisual: readBoolean(process.env.RUN_VISUAL),
+  runJourney: readBoolean(process.env.RUN_JOURNEY),
   ci: readBoolean(process.env.CI),
 };
 

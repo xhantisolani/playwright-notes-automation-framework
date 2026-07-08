@@ -13,6 +13,7 @@ Primary coverage:
 - Notes API authentication
 - Notes API CRUD operations
 - UI and API integration flows
+- Longer business journeys for onboarding and daily note triage
 
 Out of scope for the first version:
 
@@ -49,4 +50,5 @@ technical evidence.
 - Mocking tests demonstrate `page.route()` for stable UI behavior without real API dependency.
 - Accessibility tests use axe against the Notes app root.
 - Visual regression is opt-in through `RUN_VISUAL=true` and the `test:visual` scripts.
+- Business journey tests are opt-in through `RUN_JOURNEY=true` and the `test:journey` scripts.
 - CI runs API and Chromium suites through a matrix and two shards.

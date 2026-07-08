@@ -16,6 +16,11 @@ on:
           - local
           - qa
           - staging
+      run_journey:
+        description: Include longer business journey tests
+        default: false
+        required: true
+        type: boolean
 
 jobs:
   quality:
@@ -49,6 +54,7 @@ jobs:
     timeout-minutes: 35
     env:
       TEST_ENV: ${{ github.event.inputs.test_env || 'qa' }}
+      RUN_JOURNEY: ${{ github.event.inputs.run_journey || 'false' }}
 
     strategy:
       fail-fast: false

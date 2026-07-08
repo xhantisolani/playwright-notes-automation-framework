@@ -30,6 +30,7 @@ cleanup, reports, traces, and GitHub Actions in one clean repository.
 tests/
   api/          API tests for health, auth, and notes CRUD
   e2e/          Tests that combine API setup with UI verification
+  journeys/     Longer business workflows for nightly/manual regression
   setup/        Auth setup and global teardown
   ui/           UI specs grouped by feature
 pages/          Page objects
@@ -68,6 +69,9 @@ npm run test:mocking
 npm run test:accessibility
 npm run test:visual:update
 npm run test:visual
+npm run test:journey
+npm run test:journey:headed
+npm run test:nightly
 npm run report
 npm run report:summary
 npm run report:allure
@@ -102,12 +106,16 @@ Tests include title tags:
 - `@api`
 - `@ui`
 - `@e2e`
+- `@journey`
+- `@critical`
+- `@nightly`
 
 Examples:
 
 ```bash
 npm run test:smoke
 npm run test:api
+npm run test:journey
 npx playwright test --grep "@ui"
 ```
 
@@ -143,7 +151,11 @@ into a stakeholder summary.
 - Accessibility scans with axe
 - API mocking with `page.route()`
 - Opt-in visual regression
+- Opt-in business journey tests with `RUN_JOURNEY=true`
 - CI matrix and sharding
+
+Business journey tests are documented in
+[docs/business-journey-tests.md](docs/business-journey-tests.md).
 
 ## Learning Path
 

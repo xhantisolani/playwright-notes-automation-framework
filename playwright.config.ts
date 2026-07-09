@@ -1,10 +1,39 @@
 import { defineConfig, devices } from '@playwright/test';
+import nodePath from 'node:path';
 import { env, paths } from './utils/env';
 
 const ignoredTests = [
   ...(!env.runVisual ? ['**/ui/visual/**'] : []),
   ...(!env.runJourney ? ['**/journeys/**'] : []),
 ];
+
+function createReportRunId(): string {
+  const now = new Date();
+  const pad = (value: number) => value.toString().padStart(2, '0');
+
+  return [
+    `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`,
+    `${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`,
+  ].join('_');
+}
+
+function sanitizeReportRunId(value: string): string {
+  const sanitized = Array.from(value.trim().replace(/[<>:"/\\|?*]/g, '-'))
+    .map((character) => (character.charCodeAt(0) < 32 ? '-' : character))
+    .join('');
+
+  return sanitized || createReportRunId();
+}
+
+const reportRoot = nodePath.resolve(process.cwd(), process.env.REPORT_ROOT?.trim() || 'reports');
+const reportRunId = sanitizeReportRunId(process.env.REPORT_RUN_ID || createReportRunId());
+process.env.REPORT_RUN_ID = reportRunId;
+const reportRunDir = nodePath.join(reportRoot, reportRunId);
+const testResultsDir = nodePath.join(reportRunDir, 'test-results');
+
+if (!process.env.TEST_WORKER_INDEX) {
+  console.log(`Writing test reports to ${nodePath.relative(process.cwd(), reportRunDir)}`);
+}
 
 export default defineConfig({
   testDir: './tests',
@@ -20,15 +49,21 @@ export default defineConfig({
   reporter: env.ci
     ? [
         ['github'],
-        ['html', { outputFolder: 'playwright-report', open: 'never' }],
-        ['json', { outputFile: 'test-results/results.json' }],
-        ['allure-playwright', { outputFolder: 'allure-results', detail: true }],
+        ['html', { outputFolder: nodePath.join(reportRunDir, 'playwright-report'), open: 'never' }],
+        ['json', { outputFile: nodePath.join(testResultsDir, 'results.json') }],
+        [
+          'allure-playwright',
+          { resultsDir: nodePath.join(reportRunDir, 'allure-results'), detail: true },
+        ],
       ]
     : [
         ['list'],
-        ['html', { outputFolder: 'playwright-report', open: 'never' }],
-        ['json', { outputFile: 'test-results/results.json' }],
-        ['allure-playwright', { outputFolder: 'allure-results', detail: true }],
+        ['html', { outputFolder: nodePath.join(reportRunDir, 'playwright-report'), open: 'never' }],
+        ['json', { outputFile: nodePath.join(testResultsDir, 'results.json') }],
+        [
+          'allure-playwright',
+          { resultsDir: nodePath.join(reportRunDir, 'allure-results'), detail: true },
+        ],
       ],
   globalTeardown: './tests/setup/global.teardown.ts',
   use: {
@@ -59,5 +94,5 @@ export default defineConfig({
       },
     },
   ],
-  outputDir: 'test-results',
+  outputDir: nodePath.join(testResultsDir, 'artifacts'),
 });

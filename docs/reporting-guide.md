@@ -19,9 +19,36 @@ npm run report:summary
 npm run report:allure
 ```
 
-The report opens from `playwright-report/`.
-The summary command reads `test-results/results.json` and prints a short terminal summary.
-The Allure command generates `allure-report/` from `allure-results/`.
+Each run writes to a timestamped folder under `reports/`, for example:
+
+```text
+reports/2026-07-09_21-15-30/
+```
+
+The Playwright HTML report is written to that run's `playwright-report/` folder.
+The summary command reads the latest run's `test-results/results.json` and prints a short terminal summary.
+The Allure command generates the latest run's `allure-report/` from that same run's `allure-results/`.
+
+To run only the notes UI spec and open only that run's Allure report:
+
+```bash
+npm run test:notes
+npm run report:allure:open
+```
+
+To run only the notes UI spec and open only that run's Playwright HTML report:
+
+```bash
+npm run test:notes
+npm run report
+```
+
+To generate or open a specific historical run, pass its timestamp:
+
+```bash
+npm run report:allure -- --run 2026-07-09_21-15-30
+npm run report:summary -- --run 2026-07-09_21-15-30
+```
 
 ## How To Read A Test
 

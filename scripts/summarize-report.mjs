@@ -1,12 +1,70 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const reportPath = path.resolve(process.cwd(), 'test-results/results.json');
+const reportRoot = path.resolve(process.cwd(), process.env.REPORT_ROOT?.trim() || 'reports');
+const runOption = readOption('--run');
+const reportPath = path.join(resolveRunDir(runOption), 'test-results', 'results.json');
 
 if (!fs.existsSync(reportPath)) {
-  console.error('No Playwright JSON report found at test-results/results.json.');
+  console.error(`No Playwright JSON report found at ${path.relative(process.cwd(), reportPath)}.`);
   console.error('Run npm test first, then run npm run report:summary.');
   process.exit(1);
+}
+
+function readOption(name) {
+  const index = process.argv.indexOf(name);
+
+  if (index === -1) {
+    return undefined;
+  }
+
+  return process.argv[index + 1];
+}
+
+function resolveRunDir(run) {
+  if (run) {
+    const directPath = path.isAbsolute(run) ? run : path.resolve(reportRoot, run);
+
+    if (fs.existsSync(directPath)) {
+      return directPath;
+    }
+
+    const relativePath = path.resolve(process.cwd(), run);
+
+    if (fs.existsSync(relativePath)) {
+      return relativePath;
+    }
+
+    console.error(`Report run not found: ${run}`);
+    process.exit(1);
+  }
+
+  if (!fs.existsSync(reportRoot)) {
+    console.error(`No report folder found at ${path.relative(process.cwd(), reportRoot)}.`);
+    console.error('Run npm test first, then run npm run report:summary.');
+    process.exit(1);
+  }
+
+  const runs = fs
+    .readdirSync(reportRoot, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => path.join(reportRoot, entry.name))
+    .filter((runDir) => fs.existsSync(path.join(runDir, 'test-results', 'results.json')))
+    .map((runDir) => ({
+      runDir,
+      modifiedAt: fs.statSync(path.join(runDir, 'test-results', 'results.json')).mtimeMs,
+    }))
+    .sort((a, b) => b.modifiedAt - a.modifiedAt);
+
+  if (runs.length === 0) {
+    console.error(
+      `No Playwright JSON reports found under ${path.relative(process.cwd(), reportRoot)}.`,
+    );
+    console.error('Run npm test first, then run npm run report:summary.');
+    process.exit(1);
+  }
+
+  return runs[0].runDir;
 }
 
 const report = JSON.parse(fs.readFileSync(reportPath, 'utf-8'));
@@ -50,6 +108,7 @@ const seconds = (summary.duration / 1000).toFixed(1);
 
 console.log('Playwright Test Summary');
 console.log('=======================');
+console.log(`Report: ${path.relative(process.cwd(), reportPath)}`);
 console.log(`Total: ${summary.total}`);
 console.log(`Passed: ${summary.passed ?? 0}`);
 console.log(`Failed: ${summary.failed ?? 0}`);

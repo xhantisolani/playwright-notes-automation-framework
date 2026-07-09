@@ -9,6 +9,7 @@ module.exports = tseslint.config(
       'allure-results/',
       'allure-report/',
       'test-results/',
+      'reports/',
       'playwright/.auth/',
       'eslint.config.js',
     ],

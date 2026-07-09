@@ -6,6 +6,7 @@ const require = createRequire(import.meta.url);
 const allureCommandline = require('allure-commandline');
 const reportRoot = path.resolve(process.cwd(), process.env.REPORT_ROOT?.trim() || 'reports');
 const shouldOpen = process.argv.includes('--open');
+const shouldGenerateAll = process.argv.includes('--all');
 const runOption = readOption('--run');
 
 function readOption(name) {
@@ -79,17 +80,49 @@ async function runAllure(args) {
 }
 
 const runDir = resolveRunDir(runOption);
-const allureResultsDir = path.join(runDir, 'allure-results');
-const allureReportDir = path.join(runDir, 'allure-report');
 
-if (!fs.existsSync(allureResultsDir)) {
-  console.error(`No Allure results found at ${path.relative(process.cwd(), allureResultsDir)}.`);
-  process.exit(1);
+if (shouldGenerateAll) {
+  for (const historicalRunDir of findAllRunDirs()) {
+    await generateAllureReport(historicalRunDir);
+  }
+} else {
+  await generateAllureReport(runDir);
 }
 
-console.log(`Generating Allure report for ${path.relative(process.cwd(), runDir)}`);
-await runAllure(['generate', allureResultsDir, '--clean', '-o', allureReportDir]);
-
 if (shouldOpen) {
-  await runAllure(['open', allureReportDir]);
+  await runAllure(['open', path.join(runDir, 'allure-report')]);
+}
+
+function findAllRunDirs() {
+  if (!fs.existsSync(reportRoot)) {
+    console.error(`No report folder found at ${path.relative(process.cwd(), reportRoot)}.`);
+    process.exit(1);
+  }
+
+  return fs
+    .readdirSync(reportRoot, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => path.join(reportRoot, entry.name))
+    .filter((historicalRunDir) => fs.existsSync(path.join(historicalRunDir, 'allure-results')))
+    .sort();
+}
+
+async function generateAllureReport(historicalRunDir) {
+  const allureResultsDir = path.join(historicalRunDir, 'allure-results');
+  const allureReportDir = path.join(historicalRunDir, 'allure-report');
+
+  if (!fs.existsSync(allureResultsDir)) {
+    console.error(`No Allure results found at ${path.relative(process.cwd(), allureResultsDir)}.`);
+    process.exit(1);
+  }
+
+  console.log(`Generating Allure report for ${path.relative(process.cwd(), historicalRunDir)}`);
+  await runAllure([
+    'generate',
+    allureResultsDir,
+    '--clean',
+    '--single-file',
+    '-o',
+    allureReportDir,
+  ]);
 }

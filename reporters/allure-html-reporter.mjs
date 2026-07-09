@@ -32,7 +32,14 @@ export default class AllureHtmlReporter {
 
     console.log(`Generating Allure HTML report at ${path.relative(process.cwd(), this.reportDir)}`);
 
-    await runAllure(['generate', this.resultsDir, '--clean', '-o', this.reportDir]);
+    await runAllure([
+      'generate',
+      this.resultsDir,
+      '--clean',
+      '--single-file',
+      '-o',
+      this.reportDir,
+    ]);
   }
 }
 

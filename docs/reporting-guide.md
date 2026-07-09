@@ -27,8 +27,10 @@ reports/2026-07-09_21-15-30/
 
 The Playwright HTML report is written to that run's `playwright-report/` folder.
 The Allure HTML report is generated automatically at the end of the run and written to that run's `allure-report/` folder.
+It is generated in single-file mode so `allure-report/index.html` can be opened directly from the timestamped folder.
 The summary command reads the latest run's `test-results/results.json` and prints a short terminal summary.
 The Allure command can still regenerate or open the latest run's `allure-report/` from that same run's `allure-results/`.
+To update older timestamped Allure reports to the same single-file format, run `npm run report:allure -- --all`.
 
 Run any Playwright scope you need:
 

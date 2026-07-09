@@ -26,21 +26,29 @@ reports/2026-07-09_21-15-30/
 ```
 
 The Playwright HTML report is written to that run's `playwright-report/` folder.
+The Allure HTML report is generated automatically at the end of the run and written to that run's `allure-report/` folder.
 The summary command reads the latest run's `test-results/results.json` and prints a short terminal summary.
-The Allure command generates the latest run's `allure-report/` from that same run's `allure-results/`.
+The Allure command can still regenerate or open the latest run's `allure-report/` from that same run's `allure-results/`.
 
-To run only the notes UI spec and open only that run's Allure report:
+Run any Playwright scope you need:
 
 ```bash
-npm run test:notes
-npm run report:allure:open
+npm test
+npx playwright test tests/api
+npx playwright test tests/ui/auth/login.spec.ts
+npx playwright test --grep @smoke
 ```
 
-To run only the notes UI spec and open only that run's Playwright HTML report:
+Then open the latest Playwright HTML report:
 
 ```bash
-npm run test:notes
 npm run report
+```
+
+Or open the latest Allure HTML report:
+
+```bash
+npm run report:allure:open
 ```
 
 To generate or open a specific historical run, pass its timestamp:
@@ -71,7 +79,7 @@ The framework captures evidence only when it is useful:
 - Video retained on failure
 - Trace retained on failure
 - HTML report for all runs
-- Allure results for richer test history and categorization
+- Allure HTML report and raw results for richer test history and categorization
 
 This avoids creating thousands of screenshots for passing tests while still giving enough detail
 when something breaks.

@@ -17,7 +17,7 @@ module.exports = tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ['scripts/*.mjs'],
+    files: ['scripts/*.mjs', 'reporters/*.mjs'],
     languageOptions: {
       globals: {
         console: 'readonly',
